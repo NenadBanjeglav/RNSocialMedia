@@ -2,22 +2,26 @@ import FeedPostItem from "@/components/FeedPostItem";
 import { Button, FlatList, Pressable } from "react-native";
 import dummyPosts from "@/dummyPosts";
 import { Link } from "expo-router";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { AntDesign } from "@expo/vector-icons";
+import { Post } from "@/types/models";
 
 export default function FeedScreen() {
-  const fetchApi = async () => {
-    const response = await fetch("/hello");
-    const json = await response.json();
-    console.log("Response from cliend side request: ", json);
-    console.log("From client side: ", process.env.SECRET_KEY);
-    console.log("From client side: ", process.env.EXPO_PUBLIC_SHARED_KEY);
-  };
+  const [posts, setPosts] = useState<Post[]>([]);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      const response = await fetch("/api/posts");
+      const data = await response.json();
+      setPosts(data.posts);
+    };
+    fetchPosts();
+  }, []);
 
   return (
     <>
       <FlatList
-        data={dummyPosts}
+        data={posts}
         renderItem={({ item }) => (
           <Link href={`/post/${item.id}`}>
             <FeedPostItem post={item} />
@@ -29,8 +33,6 @@ export default function FeedScreen() {
           <AntDesign name="plus" size={24} color="white" />
         </Pressable>
       </Link>
-
-      <Button onPress={fetchApi} title="Fetch API" />
     </>
   );
 }
