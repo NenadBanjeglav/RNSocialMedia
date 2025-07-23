@@ -1,6 +1,13 @@
+import { useAuth } from "@/providers/AuthProvider";
 import React from "react";
-import { Text } from "react-native";
+import { Button, Text, View } from "react-native";
 
 export default function Profile() {
-  return <Text>Profile</Text>;
+  const { signOut } = useAuth();
+  return (
+    <View>
+      <Text>Profile</Text>
+      <Button onPress={signOut} title="Sign out" />
+    </View>
+  );
 }

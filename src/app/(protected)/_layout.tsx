@@ -17,6 +17,7 @@ export default function PortectedLayout() {
   return (
     <Stack>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="new" options={{ title: "", animation: "flip" }} />
     </Stack>
   );
 }
