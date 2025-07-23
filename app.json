@@ -25,10 +25,11 @@
     },
     "web": {
       "bundler": "metro",
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "output": "server"
     },
     "plugins": [
-      "expo-router",
+      ["expo-router", { "origin": "http://localhost:8081" }],
       "expo-secure-store"
     ]
   }
