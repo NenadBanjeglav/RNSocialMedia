@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Button, Text, TextInput, View } from "react-native";
 
 export default function SignIn() {
-  const [username, setUsername] = useState("");
+  const [username, setUsername] = useState("jeff");
   const { signIn } = useAuth();
 
   const handleSignIn = () => {

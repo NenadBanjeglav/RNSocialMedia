@@ -7,6 +7,8 @@ import {
 } from "react";
 import { User } from "@/types/models";
 import * as SecureStore from "expo-secure-store";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { signInRequest } from "@/services/authService";
 
 type Session = {
   user: User;
@@ -25,35 +27,31 @@ const AuthContext = createContext<{
   isLoading: false,
 });
 
-const avatar =
-  "https://notjustdev-dummy.s3.us-east-2.amazonaws.com/avatars/vadim.png";
-
 export function AuthProvider({ children }: PropsWithChildren) {
   const [session, setSession] = useState<Session | null>();
   const [isLoading, setIsLoading] = useState(true);
+
+  const queryClient = useQueryClient();
+
+  const { mutate: signIn } = useMutation({
+    mutationFn: (handle: string) => signInRequest(handle),
+    onSuccess: (data) => {
+      setSession(data);
+      saveSession(data);
+    },
+    onError: (error) => {
+      console.log(error);
+    },
+  });
 
   useEffect(() => {
     loadSession();
   }, []);
 
-  const signIn = (handle: string) => {
-    const session: Session = {
-      user: {
-        id: "1",
-        handle,
-        name: "Nenad",
-        avatar: avatar,
-      },
-      accessToken: "accessToken",
-    };
-
-    setSession(session);
-    saveSession(session);
-  };
-
   const signOut = () => {
     setSession(null);
     saveSession(null);
+    queryClient.clear();
   };
 
   const saveSession = async (value: Session | null) => {

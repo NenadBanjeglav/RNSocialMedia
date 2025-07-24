@@ -4,6 +4,9 @@ import { Post } from "@/types/models";
 import React from "react";
 import { Image, Text, View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { likePostRequest, unlikePostRequest } from "@/services/postService";
+import { useAuth } from "@/providers/AuthProvider";
 
 dayjs.extend(relativeTime);
 
@@ -12,6 +15,22 @@ type FeedPostItemProps = {
 };
 
 export default function FeedPostItem({ post }: FeedPostItemProps) {
+  const { session } = useAuth();
+  const queryClient = useQueryClient();
+
+  const likeMutation = useMutation({
+    mutationFn: () => likePostRequest(post.id, session?.accessToken!),
+    onSettled: async () => {
+      return queryClient.invalidateQueries({ queryKey: ["posts"] });
+    },
+  });
+  const unlikeMutation = useMutation({
+    mutationFn: () => unlikePostRequest(post.id, session?.accessToken!),
+    onSettled: async () => {
+      return queryClient.invalidateQueries({ queryKey: ["posts"] });
+    },
+  });
+
   return (
     <View className="flex-row gap-3 p-4 border-b-gray-200 border-b-[1px]">
       <Image
@@ -44,14 +63,35 @@ export default function FeedPostItem({ post }: FeedPostItemProps) {
             <Text className="text-grey-500">{post.retweets_count}</Text>
           </View>
 
-          <View className="flex-row gap-1 items-center">
-            <MaterialCommunityIcons
-              name={post.is_liked ? "heart" : "heart-outline"}
-              size={20}
-              color={post.is_liked ? "crimson" : "grey"}
-            />
-            <Text className="text-grey-500">{post.likes_count}</Text>
-          </View>
+          {likeMutation.isPending ? (
+            <>
+              <MaterialCommunityIcons name={"heart"} size={20} color={"pink"} />
+              <Text className="text-gray-500">{post.likes_count + 1}</Text>
+            </>
+          ) : unlikeMutation.isPending ? (
+            <>
+              <MaterialCommunityIcons
+                name={"heart-outline"}
+                size={20}
+                color={"pink"}
+              />
+              <Text className="text-gray-500">{post.likes_count - 1}</Text>
+            </>
+          ) : (
+            <>
+              <MaterialCommunityIcons
+                name={post.is_liked ? "heart" : "heart-outline"}
+                size={20}
+                color={post.is_liked ? "crimson" : "gray"}
+                onPress={() =>
+                  post.is_liked
+                    ? unlikeMutation.mutate()
+                    : likeMutation.mutate()
+                }
+              />
+              <Text className="text-gray-500">{post.likes_count}</Text>
+            </>
+          )}
         </View>
       </View>
     </View>
