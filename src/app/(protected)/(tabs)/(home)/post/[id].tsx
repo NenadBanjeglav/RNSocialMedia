@@ -1,5 +1,4 @@
 import FeedPostItem from "@/components/FeedPostItem";
-import dummyPosts from "@/dummyPosts";
 import { useAuth } from "@/providers/AuthProvider";
 import { getPostWithId } from "@/services/postService";
 import { useQuery } from "@tanstack/react-query";

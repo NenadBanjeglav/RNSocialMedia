@@ -3,17 +3,49 @@ import { ActivityIndicator, FlatList, Pressable, Text } from "react-native";
 import { Link } from "expo-router";
 import React from "react";
 import { AntDesign } from "@expo/vector-icons";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { useAuth } from "@/providers/AuthProvider";
 import { getPosts } from "@/services/postService";
+import { useRefreshOnFocus } from "@/hooks/tanStack";
+import { useIsFocused } from "@react-navigation/native";
 
 export default function FeedScreen() {
   const { session } = useAuth();
+  const isFocused = useIsFocused();
 
-  const { data, error, isLoading, refetch, isRefetching } = useQuery({
+  //eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjE4NTE3YzBhLWVmNmItNDk3Yy04ODQ5LTIzZmIyOGJhZTU1MyIsImlhdCI6MTc1MzM3MDE0OCwiZXhwIjoxNzU1OTYyMTQ4fQ.SXD40Em0RLbrVBv6NP2EzEH6jI20NkXbh1iVgIUP3VA
+
+  const {
+    data,
+    error,
+    isLoading,
+    refetch,
+    isRefetching,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
     queryKey: ["posts"],
-    queryFn: () => getPosts(session?.accessToken!),
+    queryFn: ({ pageParam }) => getPosts(pageParam, session?.accessToken!),
+    initialPageParam: {
+      limit: 20,
+      cursor: undefined,
+    },
+    getNextPageParam: (lastPage, pages) => {
+      if (lastPage.length == 0) {
+        return undefined;
+      }
+      return {
+        limit: 5,
+        cursor: lastPage[lastPage.length - 1].id,
+      };
+    },
+    subscribed: isFocused,
   });
+
+  useRefreshOnFocus(refetch);
+
+  const posts = data?.pages.flat() || [];
 
   if (isLoading) return <ActivityIndicator />;
 
@@ -24,7 +56,7 @@ export default function FeedScreen() {
   return (
     <>
       <FlatList
-        data={data}
+        data={posts}
         renderItem={({ item }) => (
           <Link href={`/post/${item.id}`} asChild>
             <Pressable>
@@ -34,7 +66,13 @@ export default function FeedScreen() {
         )}
         onRefresh={refetch}
         refreshing={isRefetching}
+        onEndReachedThreshold={2}
+        onEndReached={() =>
+          !isFetchingNextPage && hasNextPage && fetchNextPage()
+        }
+        ListFooterComponent={() => isFetchingNextPage && <ActivityIndicator />}
       />
+
       <Link href="/new" asChild>
         <Pressable className="absolute right-5 bottom-5 bg-[#007AFF] rounded-full w-[60px] h-[60px] items-center justify-center shadow-lg">
           <AntDesign name="plus" size={24} color="white" />
