@@ -14,14 +14,19 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.maradil.RNSocialMedia",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.maradil.RNSocialMedia"
     },
     "web": {
       "bundler": "metro",
@@ -29,8 +34,21 @@
       "output": "server"
     },
     "plugins": [
-      ["expo-router", { "origin": "http://localhost:8081" }],
+      [
+        "expo-router",
+        {
+          "origin": "http://localhost:8081"
+        }
+      ],
       "expo-secure-store"
-    ]
+    ],
+    "extra": {
+      "router": {
+        "origin": "http://localhost:8081"
+      },
+      "eas": {
+        "projectId": "bab9582d-e3b1-440e-a9aa-119377664e1c"
+      }
+    }
   }
 }
